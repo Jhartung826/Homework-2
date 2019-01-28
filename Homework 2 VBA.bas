@@ -1,5 +1,7 @@
 Attribute VB_Name = "Module2"
 Sub Stockmagic()
+
+  ' Defining variables  
 Dim lastrow As Long
 Dim rowcount As Double
 Dim stock As Double
@@ -14,10 +16,12 @@ Dim stockcontender As Double
 Dim totalstock As Double
 Dim ws As Worksheet
 
+  'For loop for worksheets
 For Each ws In Worksheets
-rowcount = Range("A2", Range("A2").End(xlDown)).Rows.Count + 1
+  ' last row
+  rowcount = Range("A2", Range("A2").End(xlDown)).Rows.Count + 1
 
-
+'these variables are used to determine the highest stock, volume, greatest percentage increase, and least percentage increase. The least is 700,000 to assure we can get the greatest decrease
 stock = 0
 
 greatest = 0
@@ -38,33 +42,39 @@ ws.Range("K1").Value = "Yearly Change"
 ws.Range("L1").Value = "Percentage Change"
 ws.Range("M1").Value = "Total Volume"
 
+'a filter that filters the the entire stock column for unique values and copies them into the ticker column
 ws.Range("A2", ws.Range("A3").End(xlDown)).AdvancedFilter xlFilterCopy, , ws.Range("J2"), True
-
+' double check for duplicates
 ws.Range("J2", ws.Range("J2").End(xlDown)).RemoveDuplicates Columns:=1, Header:=xlNo
 
-
+' the ticker column
 summaryrow = 2
-
+' for loop
 For i = 2 To rowcount
 
-
+' goes through loop until the stock name changes
 If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Or IsEmpty(Cells(i + 1, 1).Value) Then
-
+' since the worksheet goes by the chronological order of each stock we can assume that the end year is the last row for that particular stock
 endyear = ws.Cells(i, 6).Value
-' then we must do the math beg year - end year
+' Since we have our end year and beg year filled this is where we find the percent change
 ws.Cells(summaryrow, 11).Value = endyear - begyear
+' no percentage change for 0
 If begyear = 0 Then
 ws.Cells(summaryrow, 12).Value = 0
 Else
+' percent change
 ws.Cells(summaryrow, 12).Value = (endyear - begyear) / begyear
 End If
-stock = stock + Cells(i, 7).Value
+'adding the stock volume for each row
+stock = stock + ws.Cells(i, 7).Value
+' since it is the last row for that stock we can assume it is the total value of that stock
 ws.Cells(summaryrow, 13).Value = stock
+' highlighting percentage changes depending on the values
 If ws.Cells(summaryrow, 11).Value < 0 Then
 ws.Cells(summaryrow, 11).Interior.ColorIndex = 3
 Else: ws.Cells(summaryrow, 11).Interior.ColorIndex = 4
 End If
-' insert hard here since we fill out our total stock, percent increase, and percent change here
+' insert hard(I created separte modules before combining them into one) here since we fill out our total stock, percent increase, and percent change here
 ' set contenders to current percentage changes
 ' dont forget summary row not i when trying to find those vlaues
 greatcontender = ws.Cells(summaryrow, 12).Value
@@ -116,10 +126,10 @@ End If
 Next i
 
 
-
+' change format to percentage
 ws.Columns("L:L").Style = "Percent"
 ws.Range("R2:R3").Style = "Percent"
-
+' autofit 
   ws.Columns("K:K").EntireColumn.AutoFit
     ws.Columns("L:L").EntireColumn.AutoFit
     ws.Columns("M:M").EntireColumn.AutoFit
